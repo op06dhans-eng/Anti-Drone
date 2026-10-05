@@ -183,6 +183,7 @@ function propTex(){const c=document.createElement('canvas');c.width=c.height=128
  g.strokeStyle='rgba(15,15,15,.25)';g.lineWidth=6;for(let k=0;k<2;k++){g.beginPath();g.arc(64,64,48,k*Math.PI+.2,k*Math.PI+1.1);g.stroke();}return new THREE.CanvasTexture(c);}
 const PTX=propTex();
 const W3={};
+const JAMPOS={artillery:[55,-95],depot:[30,-20],bridge:[14,40]};
 function buildWorld(R,style,quality){
  STY=style;P=STYLES[style];WSEED=11+style.charCodeAt(0);
  const S=new THREE.Scene();S.fog=new THREE.Fog(P.fog,P.fogD[0],P.fogD[1]);
@@ -237,7 +238,7 @@ function buildAsset(S){const g=new THREE.Group();const camo=new THREE.MeshStanda
  // 干擾車
  const jt=new THREE.Group();const jb=new THREE.Mesh(new THREE.BoxGeometry(2.6,2.6,6),veh);jb.position.y=1.6;jt.add(jb);const mast=new THREE.Mesh(new THREE.CylinderGeometry(.08,.12,8,6),new THREE.MeshStandardMaterial({color:0x777777}));mast.position.y=6.5;jt.add(mast);
  for(let i=0;i<4;i++){const a=new THREE.Mesh(new THREE.BoxGeometry(.9,.06,.06),mast.material);a.position.y=8+i*.5;a.rotation.y=i*.8;jt.add(a);}
- jt.position.set(P.asset==='bridge'?14:30,0,P.asset==='bridge'?40:-20);if(P.asset==='bridge')jt.position.y=hgt(14,40);else jt.position.y=hgt(30,-20);g.add(jt);g.userData.jam=jt;
+ const jp=JAMPOS[P.asset];jt.position.set(jp[0],hgt(jp[0],jp[1])-(P.asset==='bridge'?0:hgt(0,0)),jp[1]);g.add(jt);g.userData.jam=jt;
  g.position.y=P.asset==='bridge'?0:hgt(0,0);g.traverse(o=>{if(o.isMesh){o.castShadow=o.receiveShadow=true}});S.add(g);return g;}
 
 // ===================== 模型（全部原創造型） =====================
@@ -301,36 +302,36 @@ function mWrap(){// 收束後：網子包住無人機，上方拉出小降落傘
 
 // ===================== 關卡 =====================
 const LEVELS=[
- {id:1,sty:'A',title:'偵察機出沒',goal:'撞下兩架偵察機',mode:'ram',drones:3,expo:95,jam:false,assetName:'砲兵陣地',
-  brief:'兩架敵方偵察機在砲兵陣地上空盤旋，替敵軍的砲兵找位置。「暴露」到 100%，陣地就會被砲擊。',
+ {id:1,sty:'A',title:'偵察機出沒',goal:'撞下四架偵察機',mode:'ram',drones:5,expo:95,jam:false,assetName:'砲兵陣地',
+  brief:'四架敵方偵察機在砲兵陣地上空盤旋，替敵軍的砲兵找位置。「暴露」到 100%，陣地就會被砲擊。',
   tip:'跟在偵察機後面，對準紅框慢慢靠近，撞上去就算攔截成功。每撞一次，會消耗一架攔截機。',
-  waves:[{t:0,type:'recon',n:2}],
+  waves:[{t:0,type:'recon',n:4}],
   card:{h:'無人機撞下無人機',b:'烏克蘭從 2024 年 5 月起，用便宜的 FPV 無人機撞擊俄軍偵察機，半年內確認攔截近 650 架。偵察機一少，砲兵就找不到目標。',s:'Defense News，2024-12-05'}},
- {id:2,sty:'A',title:'無線電 FPV 來襲',goal:'保護砲兵陣地',mode:'ram',drones:4,jam:true,hp:100,assetName:'砲兵陣地',
-  brief:'六架自殺式 FPV 分三波飛來。陣地旁有干擾車，藍綠色的半球是干擾範圍：靠無線電遙控的 FPV 一飛進去就會失控墜落。',
-  tip:'有些 FPV 會飛進干擾範圍自己掉下來。攔截機只有四架，先攔那些可能撐到陣地的。',
-  waves:[{t:2,type:'fpv',n:2,a:[-20,25]},{t:17,type:'fpv',n:2,a:[-60,-10]},{t:32,type:'fpv',n:2,a:[10,60]}],
+ {id:2,sty:'A',title:'無線電 FPV 來襲',goal:'保護砲兵陣地',mode:'ram',drones:6,jam:true,hp:100,assetName:'砲兵陣地',
+  brief:'八架自殺式 FPV 分四波飛來。陣地東北方有干擾車，藍綠色的半球是干擾範圍：靠無線電遙控的 FPV 一飛進去就會失控墜落。',
+  tip:'從東北方來的 FPV 會飛進干擾範圍自己掉下來；從西北方繞過來的，得靠你去撞。攔截機有六架，別浪費在會被干擾打下的那幾架。',
+  waves:[{t:2,type:'fpv',n:2,a:[-60,-38]},{t:14,type:'fpv',n:2,a:[8,45]},{t:26,type:'fpv',n:2,a:[-58,-36]},{t:38,type:'fpv',n:2,a:[5,48]}],
   card:{h:'干擾是第一道盾',b:'據報導，前線一半以上的 FPV 是被電子干擾打下來的，其中不少是誤傷自己人。',s:'美國西點軍校打擊恐怖主義中心《CTC Sentinel》，2025 年 7 月'}},
- {id:3,sty:'C',title:'捕捉網',goal:'網住五架小型偵察機',mode:'net',drones:2,nets:10,expo:110,assetName:'橋',
+ {id:3,sty:'C',title:'捕捉網',goal:'網住五架小型偵察機',mode:'net',drones:2,nets:12,expo:110,assetName:'橋',
   brief:'五架小型四軸偵察機在橋的上空盯著我方車隊。這次你的攔截機裝了捕捉網發射器，可以連續發射，不用撞上去。',
-  tip:'紅框變成實心、出現「網子射程內」時按「發射網」。小型機發現你靠近會閃開，網子共 10 發。小心別撞上，撞到會損毀攔截機（只有 1 架備用）。',
+  tip:'紅框變成實心、出現「網子射程內」時按「發射網」。小型機發現你靠近會閃開，網子共 12 發。小心別撞上，撞到會損毀攔截機（只有 1 架備用）。',
   waves:[{t:0,type:'quad',n:5}],
   card:{h:'一張網，打下一百架',b:'烏克蘭一支部隊用會發射網子的無人機攔截俄軍小型無人機，士兵說他們的小組「五個星期網下了一百架」。被網住的通常是一架一千多到三千多美元的商用四軸機。',s:'自由歐洲電台（RFE/RL），2025-08-25'}},
- {id:4,sty:'B',title:'光纖 FPV',goal:'保護補給站',mode:'ram',drones:4,jam:true,hp:100,assetName:'補給站',
-  brief:'四架 FPV 拖著光纖線飛來。光纖不靠無線電，干擾車拿它們沒辦法。',
+ {id:4,sty:'B',title:'光纖 FPV',goal:'保護補給站',mode:'ram',drones:6,jam:true,hp:100,assetName:'補給站',
+  brief:'五架 FPV 拖著光纖線分兩波飛來。光纖不靠無線電，干擾車拿它們沒辦法。',
   tip:'干擾範圍擋不住它們，每一架都得你親自去撞。白色的光纖線在雪地上不容易看見，靠紅框找。',
-  waves:[{t:2,type:'fiber',n:2,a:[-30,20]},{t:22,type:'fiber',n:2,a:[-70,70]}],
+  waves:[{t:2,type:'fiber',n:2,a:[-30,20]},{t:20,type:'fiber',n:3,a:[-70,70]}],
   card:{h:'光纖讓干擾失效',b:'光纖線讓電子干擾完全無效；代價是無人機變重、線容易被勾住。前線田野上到處是斷掉的光纖，像蜘蛛網一樣。',s:'富比士（Forbes），2025-06-06'}},
- {id:5,sty:'C',title:'長程自殺無人機',goal:'保護橋',mode:'ram',drones:3,hp:100,assetName:'橋',
-  brief:'三架固定翼長程自殺無人機從遠方直線飛來，速度比你快。這種無人機照預先設定的路線飛，干擾也攔不住。',
+ {id:5,sty:'C',title:'長程自殺無人機',goal:'保護橋',mode:'ram',drones:5,hp:100,assetName:'橋',
+  brief:'四架固定翼長程自殺無人機從遠方直線飛來，速度比你快。這種無人機照預先設定的路線飛，干擾也攔不住。',
   tip:'從後面追不上。看雷達，先飛到它的航線前方，迎面截住它；需要時按住「衝刺」。',
-  waves:[{t:2,type:'long',n:1,a:[-10,10]},{t:19,type:'long',n:1,a:[-45,-25]},{t:36,type:'long',n:1,a:[25,45]}],
+  waves:[{t:2,type:'long',n:1,a:[-10,10]},{t:19,type:'long',n:1,a:[-45,-25]},{t:36,type:'long',n:1,a:[25,45]},{t:52,type:'long',n:1,a:[-5,15]}],
   card:{h:'兩千美元換五萬美元',b:'烏克蘭的攔截無人機一架約兩千美元或更少，用來撞下的長程自殺無人機，一架估計兩萬到五萬美元。',s:'路透社（Reuters），2026-03-17'},
   cost:{mine:2000,theirs:[20000,50000]}},
- {id:6,sty:'B',title:'誘餌混在裡面',goal:'保護補給站',mode:'net',drones:2,nets:10,hp:100,assetName:'補給站',
-  brief:'這一波有真的長程自殺無人機，也有便宜的誘餌，遠看長得一模一樣，後面還跟著光纖 FPV。網子只有 10 發。',
+ {id:6,sty:'B',title:'誘餌混在裡面',goal:'保護補給站',mode:'net',drones:2,nets:12,hp:100,assetName:'補給站',
+  brief:'這一波有真的長程自殺無人機，也有便宜的誘餌，遠看長得一模一樣，後面還跟著光纖 FPV。網子只有 12 發。',
   tip:'飛到 170 公尺內才認得出是真機還是誘餌。誘餌沒有彈頭，撞到補給站也不會爆炸。別把網子浪費在誘餌上。',
-  waves:[{t:2,type:'decoy',n:2,a:[-25,25]},{t:4,type:'long',n:1,a:[-15,15]},{t:16,type:'decoy',n:1,a:[30,60]},{t:19,type:'fiber',n:2,a:[-60,-20]},{t:30,type:'long',n:1,a:[-50,-30]}],
+  waves:[{t:2,type:'decoy',n:2,a:[-25,25]},{t:4,type:'long',n:1,a:[-15,15]},{t:16,type:'decoy',n:1,a:[30,60]},{t:19,type:'fiber',n:2,a:[-60,-20]},{t:30,type:'long',n:1,a:[-50,-30]},{t:42,type:'long',n:1,a:[20,40]}],
   card:{h:'誘餌：讓防空白忙一場',b:'誘餌無人機和攻擊無人機一起大量發射，目的是吸引防空火力、消耗攔截彈。烏克蘭官員估計一架造價約一萬美元，只是攻擊無人機的零頭。',s:'美國科學與國際安全研究所（ISIS），2024-12-18'}}
 ];
 const ETYPE={
@@ -409,7 +410,7 @@ function startLevel(L){
  $('hudMission').textContent=L.title;$('hudGoal').textContent=L.goal;$('assetName').textContent=L.assetName;
  $('hud').style.setProperty('--c',STYLES[L.sty].c);$('bNet').style.display=L.mode==='net'?'grid':'none';$('expoBox').style.display=L.expo?'block':'none';$('hpBox').style.display=L.expo?'none':'block';
  showScreen('game');humStart();}
-const JR=150,RANGE=950;
+const JR=85,RANGE=950;
 function launchPos(){return STY==='C'?new V3(0,22,150):new V3(0,hgt(0,150)+22,150);}
 function spawnMe(){if(G.me)G.S.remove(G.me.o);const o=mInterceptor(G.L.mode==='net');o.scale.setScalar(1.35);G.S.add(o);
  G.me={o,pos:launchPos(),yaw:0,pitch:0,roll:0,spd:30,vel:new V3(),age:0};G.battery=1;G.dead=false;G.out=0;G.camInit=true;}
@@ -417,7 +418,7 @@ function spawnEnemy(type,aRange,idx,n){const T=ETYPE[type];let o;
  if(type==='recon')o=mRecon();else if(type==='quad')o=mQuad();else if(type==='long')o=mLong(false);else if(type==='decoy')o=mLong(true);else o=mFPV(type==='fiber');
  G.S.add(o);const e={type,T,o,pos:new V3(),vel:new V3(),state:'alive',t:0,ph:Math.random()*6,id:Math.random()};
  const alt=T.alt[0]+Math.random()*(T.alt[1]-T.alt[0]);
- if(type==='recon'){e.cr=230+idx*70;e.ang=idx*Math.PI;e.alt=alt+idx*8;e.cx=40*(idx?-1:1);e.cz=-60;}
+ if(type==='recon'){e.cr=200+idx*55;e.ang=idx*Math.PI*.5+(idx%2)*Math.PI;e.alt=alt+idx*6;e.cx=40*(idx%2?-1:1);e.cz=-60+(idx>1?-40:0);}
  else if(type==='quad'){const a=idx/n*Math.PI*2;e.pos.set(Math.cos(a)*120,ASSET_POS.y+alt,Math.sin(a)*100-30);e.wp=e.pos.clone();e.evade=0;}
  else{const a=(aRange?aRange[0]+(aRange[1]-aRange[0])*(n>1?idx/(n-1):.5):0)*Math.PI/180;const D=type==='long'||type==='decoy'?1050:type==='fiber'?620:660;
   e.pos.set(Math.sin(a)*D,ASSET_POS.y+alt,-Math.cos(a)*D);e.alt=alt;e.start=e.pos.clone();}
@@ -492,9 +493,11 @@ function step(dt,inp){if(!G||!G.alive||G.ended)return;G.t+=dt;stepWaves();stepMe
   if(!G.ff){G.ff=G.t;alertMsg('攔截機用完了','#ff6a4a');}else if(G.t-G.ff>2.2)return resolveRest();}
  for(const a of G.alerts)a.life-=dt;G.alerts=G.alerts.filter(a=>a.life>0);}
 // 攔截機用完：剩下的威脅直接結算，不讓畫面停在原地
-function resolveRest(){const L=G.L;const rest=[];for(const e of G.enemies)if(e.state==='alive')rest.push(e.type);for(const w of L.waves)if(!w.done)for(let i=0;i<w.n;i++)rest.push(w.type);
- if(L.expo){const n=rest.filter(t=>t==='recon'||t==='quad').length;G.restNote=`還有 ${n} 架偵察機在空中`;return endLevel(false,`攔截機用完了，剩下 ${n} 架偵察機繼續替敵軍找位置`);}
- let dmg=0,hit=0,jam=0;for(const t of rest){const T=ETYPE[t];if(L.jam&&T.radio){jam++;continue;}if(T.dmg){dmg+=T.dmg;hit++;}}
+function crossesJam(x,z){if(!G.jamPos)return false;const jx=G.jamPos.x,jz=G.jamPos.z,L2=x*x+z*z||1;let t=(jx*x+jz*z)/L2;t=clamp(t,0,1);return Math.hypot(jx-t*x,jz-t*z)<JR;}
+function resolveRest(){const L=G.L;const rest=[];for(const e of G.enemies)if(e.state==='alive')rest.push({type:e.type,j:crossesJam(e.pos.x,e.pos.z)});
+ for(const w of L.waves)if(!w.done)for(let i=0;i<w.n;i++){const a=(w.a?w.a[0]+(w.a[1]-w.a[0])*(w.n>1?i/(w.n-1):.5):0)*Math.PI/180;rest.push({type:w.type,j:crossesJam(Math.sin(a)*600,-Math.cos(a)*600)});}
+ if(L.expo){const n=rest.filter(r=>r.type==='recon'||r.type==='quad').length;G.restNote=`還有 ${n} 架偵察機在空中`;return endLevel(false,`攔截機用完了，剩下 ${n} 架偵察機繼續替敵軍找位置`);}
+ let dmg=0,hit=0,jam=0;for(const r of rest){const T=ETYPE[r.type];if(L.jam&&T.radio&&r.j){jam++;continue;}if(T.dmg){dmg+=T.dmg;hit++;}}
  G.stats.leak+=hit;G.stats.jam+=jam;G.stats.dmg+=dmg;G.hp=Math.max(0,G.hp-dmg);
  G.restNote=`攔截機用完了：剩下的 ${rest.length} 架無人機中，${hit} 架衝到${L.assetName}`+(jam?`、${jam} 架被干擾打下`:'')+(rest.length-hit-jam?`、${rest.length-hit-jam} 架是誘餌`:'');
  if(G.hp<=0)return endLevel(false,G.restNote+`，${L.assetName}被摧毀`);return endLevel(true);}
@@ -528,7 +531,7 @@ function hud(){const me=G.me,W=innerWidth,H=innerHeight;let bi=0,ai=0;const tgt=
    const sp=b.querySelector('span');sp.textContent=`${lab}・${d} 公尺`;
    // 角框或標籤碰到自己的攔截機：角框淡化，標籤移到上方更遠處
    let ov=false;if(mp){const dx=Math.abs(p.x-mp.x),dy=p.y-mp.y;ov=dx<mr+sz*.5+50&&dy>-(mr+sz*.5+46)&&dy<mr+sz*.5;}
-   b.classList.toggle('ov',ov);}
+   b.classList.toggle('ov',ov);const hudZone=(W>H)?(p.x<230&&p.y<270):(p.x<200&&p.y<200)||(p.x<140&&p.y>H-300);sp.style.visibility=hudZone?'hidden':'visible';}
   else if(ai<AR.length){const a=AR[ai++];tmp.subVectors(e.pos,cam.position);const c=tmp.clone().applyQuaternion(cam.quaternion.clone().invert());let ang=Math.atan2(c.x,c.y);if(c.z>0&&Math.abs(c.x)<1e-3)ang=Math.PI;
    const rx=W/2-40,ry=H/2-40;const x=W/2+Math.sin(ang)*rx,y=H/2-Math.cos(ang)*ry;a.style.display='block';a.style.left=x+'px';a.style.top=y+'px';a.style.transform=`translate(-50%,-50%) rotate(${ang}rad)`;a.style.setProperty('--bc',col||'var(--c)');}}
  for(;bi<BR.length;bi++)BR[bi].style.display='none';for(;ai<AR.length;ai++)AR[ai].style.display='none';
@@ -569,7 +572,7 @@ function drawBrief(L){const c=$('bfImg'),g=c.getContext('2d'),W=c.width,H=c.heig
  const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,bg[1]);gr.addColorStop(1,bg[0]);g.fillStyle=gr;g.fillRect(0,0,W,H);
  g.strokeStyle='rgba(255,255,255,.06)';g.lineWidth=1;for(let x=0;x<W;x+=40){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke();}for(let y=0;y<H;y+=40){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();}
  const cx=W/2,cy=H*.66,K=H*.6/700;if(L.sty==='C'){g.fillStyle='rgba(80,120,140,.5)';g.fillRect(0,cy-12,W,24);}
- if(L.jam){g.beginPath();g.arc(cx+30*K,cy+(-20)*K,150*K,0,7);g.fillStyle='rgba(79,224,200,.15)';g.fill();g.strokeStyle='rgba(79,224,200,.8)';g.stroke();g.fillStyle='#4fe0c8';g.font='bold 15px sans-serif';g.fillText('干擾範圍',cx+150*K*.7+8,cy-150*K*.7);}
+ if(L.jam){const jp=JAMPOS[STYLES[L.sty].asset];const jx=cx+jp[0]*K,jy=cy+jp[1]*K;g.beginPath();g.arc(jx,jy,JR*K,0,7);g.fillStyle='rgba(79,224,200,.15)';g.fill();g.strokeStyle='rgba(79,224,200,.8)';g.stroke();g.fillStyle='#4fe0c8';g.font='bold 15px sans-serif';g.fillText('干擾範圍',jx+JR*K*.75+6,jy-JR*K*.6);}
  g.fillStyle='#7fd38a';g.fillRect(cx-7,cy-7,14,14);g.font='bold 16px sans-serif';g.fillText(L.assetName,cx+12,cy+20);
  g.fillStyle='#fff';g.beginPath();g.moveTo(cx,cy+150*K-9);g.lineTo(cx-7,cy+150*K+5);g.lineTo(cx+7,cy+150*K+5);g.fill();g.fillText('我方起飛點',cx+12,cy+150*K+6);
  g.strokeStyle=S.c;g.fillStyle=S.c;g.lineWidth=2.5;
